@@ -1,6 +1,9 @@
 # Wheeled_Locomotion
  4 wheeled holonomous, 4 wheeled car drive and 3 wheel holonomous drive system with ps2 controller
 
+# PS2 code
+  ps2 code is the code use to control all these drive system using bluetooth wireless communication with easy of controlling by using the body of sony ps2 controller.
+
 # X drive holonomous wheeled robot
  X drive wheeled robot, based on the AVR 2560 micro-controller, which uses a LQR control architecture. In this drive the control is done using the ps2 controller and the x drive is used because of ease of direction change which changes its direction instantly as it uses holonomous wheels. Demerit of this drive is that traction issues usually occurs when there is minor change on the surface for locomotion.
 
