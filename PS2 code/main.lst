@@ -1,0 +1,851 @@
+   1               		.file	"main.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__RAMPZ__ = 0x3b
+   6               	__tmp_reg__ = 0
+   7               	__zero_reg__ = 1
+   8               		.text
+   9               	.Ltext0:
+  10               		.cfi_sections	.debug_frame
+  11               	.global	motor_pwm_init
+  13               	motor_pwm_init:
+  14               	.LFB13:
+  15               		.file 1 "main.c"
+   1:main.c        **** ////
+   2:main.c        **** ////  main.c
+   3:main.c        **** ////  PS2 code
+   4:main.c        **** ////
+   5:main.c        **** ////  Created by Soofiyan Atar on 04/12/18.
+   6:main.c        **** ////
+   7:main.c        **** //#define F_CPU 16000000UL
+   8:main.c        **** //#define BAUD 115200
+   9:main.c        **** //#define MYUBRR    F_CPU/8/BAUD-1
+  10:main.c        **** //
+  11:main.c        **** //#include <avr/io.h>
+  12:main.c        **** //#include <util/delay.h>
+  13:main.c        **** //
+  14:main.c        **** //uint8_t value = 0,value1 = 0;
+  15:main.c        **** //
+  16:main.c        **** //long map_value(long in_value, long in_min, long in_max, long out_min, long out_max);
+  17:main.c        **** //long limit_var(long in_var, long l_limit, long h_limit);
+  18:main.c        **** //void ADC_Init(void);
+  19:main.c        **** //int ADC_Read(char channel);
+  20:main.c        **** //void init_uart(unsigned short uValue);
+  21:main.c        **** //void USART_Transmit( unsigned char data);
+  22:main.c        **** //void keypad_init(void);
+  23:main.c        **** //void button_pressed(void);
+  24:main.c        **** //void check1p(void);
+  25:main.c        **** //void check2p(void);
+  26:main.c        **** //void check3p(void);
+  27:main.c        **** //void combine_port(void);
+  28:main.c        **** //
+  29:main.c        **** //int main(void)
+  30:main.c        **** //{
+  31:main.c        **** //    keypad_init();
+  32:main.c        **** //    init_uart(MYUBRR);
+  33:main.c        **** //    ADC_Init();
+  34:main.c        **** //
+  35:main.c        **** //    int X_v_l,Y_v_l,X_v_r,Y_v_r;
+  36:main.c        **** //    uint8_t xlout,xrout,yrout,ylout;
+  37:main.c        **** //
+  38:main.c        **** //    while (1)
+  39:main.c        **** //    {
+  40:main.c        **** //        button_pressed();
+  41:main.c        **** //        _delay_ms(10);
+  42:main.c        **** //        X_v_l = ADC_Read(3);                         /* Read X, Y, Z axis ADC value */
+  43:main.c        **** //        Y_v_l = ADC_Read(2);
+  44:main.c        **** //        X_v_r = ADC_Read(1);
+  45:main.c        **** //        Y_v_r = ADC_Read(0);
+  46:main.c        **** //        xlout = map_value(X_v_l,0,1024,0,200);
+  47:main.c        **** //        ylout = map_value(X_v_r,0,1024,0,200);
+  48:main.c        **** //        xrout = map_value(Y_v_l,0,1024,0,200);
+  49:main.c        **** //        yrout = map_value(Y_v_r,0,1024,0,200);
+  50:main.c        **** //        USART_Transmit(201);
+  51:main.c        **** //        USART_Transmit(xlout);
+  52:main.c        **** //        _delay_ms(10);
+  53:main.c        **** //        USART_Transmit(202);
+  54:main.c        **** //        USART_Transmit(ylout);
+  55:main.c        **** //        _delay_ms(10);
+  56:main.c        **** //        USART_Transmit(203);
+  57:main.c        **** //        USART_Transmit(xrout);
+  58:main.c        **** //        _delay_ms(10);
+  59:main.c        **** //        USART_Transmit(204);
+  60:main.c        **** //        USART_Transmit(yrout);
+  61:main.c        **** //        _delay_ms(10);
+  62:main.c        **** //    }
+  63:main.c        **** //    return 0;
+  64:main.c        **** //}
+  65:main.c        **** //
+  66:main.c        **** //long map_value(long in_value, long in_min, long in_max, long out_min, long out_max)
+  67:main.c        **** //{
+  68:main.c        **** //    return (in_value - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+  69:main.c        **** //}
+  70:main.c        **** //long limit_var(long in_var, long l_limit, long h_limit)
+  71:main.c        **** //{
+  72:main.c        **** //    if (in_var>h_limit)
+  73:main.c        **** //    {in_var=h_limit;}
+  74:main.c        **** //    else if (in_var<l_limit)
+  75:main.c        **** //    {in_var=l_limit;}
+  76:main.c        **** //    return in_var;
+  77:main.c        **** //}
+  78:main.c        **** //
+  79:main.c        **** //void ADC_Init(void)                                           /* ADC Initialization function */
+  80:main.c        **** //{
+  81:main.c        **** //    DDRC = 0x00;                                      /* Make ADC port as input */
+  82:main.c        **** //    ADCSRA = 0x87;                                      /* Enable ADC, with freq/128  */
+  83:main.c        **** //    ADMUX = 0x40;                                      /* Vref: Avcc, ADC channel: 0 */
+  84:main.c        **** //}
+  85:main.c        **** //
+  86:main.c        **** //int ADC_Read(char channel)                              /* ADC Read function */
+  87:main.c        **** //{
+  88:main.c        **** //    ADMUX = 0x40 | (channel & 0x07);                  /* set input channel to read */
+  89:main.c        **** //    ADCSRA |= (1<<ADSC);                              /* Start ADC conversion */
+  90:main.c        **** //    while (!(ADCSRA & (1<<ADIF)));                /* Wait until end of conversion by polling inte
+  91:main.c        **** //    ADCSRA |= (1<<ADIF);                                 /* Clear interrupt flag */
+  92:main.c        **** //    _delay_ms(1);                                      /* Wait a little bit */
+  93:main.c        **** //    return ADCW;                                      /* Return ADC word */
+  94:main.c        **** //}
+  95:main.c        **** //
+  96:main.c        **** //void init_uart(unsigned short uValue)
+  97:main.c        **** //{                                                     // setting the baud rate  based on the data
+  98:main.c        **** //    UBRR0H =0x00;                                     //(unsigned char)  ( uValue>> 8);  // 0x00
+  99:main.c        **** //    UBRR0L =0x0C;                                     //(unsigned char) uValue;  // 0x0// enablin
+ 100:main.c        **** //    UCSR0B = (1<<RXEN0)|(1<<TXEN0);
+ 101:main.c        **** //    UCSR0A = (1<<UDRE0)|(1<<U2X0);
+ 102:main.c        **** //    UCSR0C =  (1 << UCSZ01) | (1 << UCSZ00);         // Set frame: 8data, 1 stop
+ 103:main.c        **** //}
+ 104:main.c        **** //
+ 105:main.c        **** //void USART_Transmit( unsigned char data)
+ 106:main.c        **** //{                                                    /* Wait for empty transmit buffer */
+ 107:main.c        **** //    while (!(UCSR0A & (1<<UDRE0)));               /* Put data into buffer, sends the data */
+ 108:main.c        **** //    UDR0 = data;
+ 109:main.c        **** //}
+ 110:main.c        **** //
+ 111:main.c        **** //void keypad_init(void)
+ 112:main.c        **** //{
+ 113:main.c        **** //    DDRD |= 0xE0;
+ 114:main.c        **** //    DDRD &= ~(0x1C);
+ 115:main.c        **** //    PORTD |= 0xFC;
+ 116:main.c        **** //}
+ 117:main.c        **** //
+ 118:main.c        **** //void button_pressed(void)
+ 119:main.c        **** //{
+ 120:main.c        **** //    PORTD |= 0x7C;
+ 121:main.c        **** //    PORTD &= ~(0x80);
+ 122:main.c        **** //    combine_port();
+ 123:main.c        **** //    if((value & 0x7C) != 0x7C)
+ 124:main.c        **** //    {
+ 125:main.c        **** //        check1p();
+ 126:main.c        **** //    }
+ 127:main.c        **** //
+ 128:main.c        **** //    PORTD |= 0xBC;
+ 129:main.c        **** //    PORTD &= ~(0x40);
+ 130:main.c        **** //    combine_port();
+ 131:main.c        **** //    if((value & 0xBC) != 0xBC)
+ 132:main.c        **** //    {
+ 133:main.c        **** //        check2p();
+ 134:main.c        **** //    }
+ 135:main.c        **** //
+ 136:main.c        **** //    PORTD |= 0xDC;
+ 137:main.c        **** //    PORTD &= ~(0x20);
+ 138:main.c        **** //    combine_port();
+ 139:main.c        **** //    if((value & 0xDC) != 0xDC)
+ 140:main.c        **** //    {
+ 141:main.c        **** //        check3p();
+ 142:main.c        **** //    }
+ 143:main.c        **** //}
+ 144:main.c        **** //
+ 145:main.c        **** //void check1p(void)
+ 146:main.c        **** //{
+ 147:main.c        **** //    if((value & 0xFD) == 0x78)
+ 148:main.c        **** //    {
+ 149:main.c        **** //        value1 = 234;
+ 150:main.c        **** //        USART_Transmit(value1);
+ 151:main.c        **** //    }
+ 152:main.c        **** //    if((value & 0xFD) == 0x74)
+ 153:main.c        **** //    {
+ 154:main.c        **** //        value1 = 232;
+ 155:main.c        **** //        USART_Transmit(value1);
+ 156:main.c        **** //    }
+ 157:main.c        **** //    if((value & 0xFD) == 0x6C)
+ 158:main.c        **** //    {
+ 159:main.c        **** //        value1 = 245;
+ 160:main.c        **** //        USART_Transmit(value1);
+ 161:main.c        **** //    }
+ 162:main.c        **** //}
+ 163:main.c        **** //
+ 164:main.c        **** //void check2p(void)
+ 165:main.c        **** //{
+ 166:main.c        **** //    if((value & 0xFD) == 0xB8)
+ 167:main.c        **** //    {
+ 168:main.c        **** //        value1 = 235;
+ 169:main.c        **** //        USART_Transmit(value1);
+ 170:main.c        **** //    }
+ 171:main.c        **** //    if((value & 0xFD) == 0xB4)
+ 172:main.c        **** //    {
+ 173:main.c        **** //        value1 = 238;
+ 174:main.c        **** //        USART_Transmit(value1);
+ 175:main.c        **** //    }
+ 176:main.c        **** //    if((value & 0xFD) == 0xAC)
+ 177:main.c        **** //    {
+ 178:main.c        **** //        value1 = 243;
+ 179:main.c        **** //        USART_Transmit(value1);
+ 180:main.c        **** //    }
+ 181:main.c        **** //}
+ 182:main.c        **** //
+ 183:main.c        **** //void check3p(void)
+ 184:main.c        **** //{
+ 185:main.c        **** //    if((value & 0xFD) == 0xD8)
+ 186:main.c        **** //    {
+ 187:main.c        **** //        value1 = 236;
+ 188:main.c        **** //        USART_Transmit(value1);
+ 189:main.c        **** //    }
+ 190:main.c        **** //    if((value & 0xFD) == 0xD4)
+ 191:main.c        **** //    {
+ 192:main.c        **** //        value1 = 231;
+ 193:main.c        **** //        USART_Transmit(value1);
+ 194:main.c        **** //    }
+ 195:main.c        **** //    if((value & 0xFD) == 0xCC)
+ 196:main.c        **** //    {
+ 197:main.c        **** //        value1 = 244;
+ 198:main.c        **** //        USART_Transmit(value1);
+ 199:main.c        **** //    }
+ 200:main.c        **** //}
+ 201:main.c        **** //
+ 202:main.c        **** //void combine_port(void)
+ 203:main.c        **** //{
+ 204:main.c        **** //    value = 0x00;
+ 205:main.c        **** //    value |= (PIND & 0xFC);
+ 206:main.c        **** //}
+ 207:main.c        **** /*
+ 208:main.c        ****  * Picking_mech_1.c
+ 209:main.c        ****  *
+ 210:main.c        ****  * Created: 10/12/2018 11:41:38
+ 211:main.c        ****  * Author : lenovo
+ 212:main.c        ****  */
+ 213:main.c        **** #include <avr_compiler.h>
+ 214:main.c        **** 
+ 215:main.c        **** void init_ADC();
+ 216:main.c        **** unsigned char ADC_read(unsigned char Ch);
+ 217:main.c        **** void encoder();
+ 218:main.c        **** void motor_pwm_init();
+ 219:main.c        **** void pick();
+ 220:main.c        **** void lift();
+ 221:main.c        **** 
+ 222:main.c        **** long  DISP = 0, prev = 0,curr = 0,target = 0, error;
+ 223:main.c        **** 
+ 224:main.c        **** int main(void)
+ 225:main.c        **** {
+ 226:main.c        ****     // setting adc as input
+ 227:main.c        ****     
+ 228:main.c        ****     // button module
+ 229:main.c        ****     DDRA = 0x00;
+ 230:main.c        ****     DDRK = 0x00;
+ 231:main.c        ****     // display
+ 232:main.c        ****     //DDRJ = 0xFF;
+ 233:main.c        ****     // setting motor pwm and direction as output and pwm pin as high
+ 234:main.c        ****     DDRE = 0xFF;
+ 235:main.c        ****     PORTE = 0xFF;
+ 236:main.c        ****     DDRB = 0xFF;
+ 237:main.c        ****     // setting piston actuation as output
+ 238:main.c        ****     DDRC = 0xFF;
+ 239:main.c        ****     DDRD = 0xFF;
+ 240:main.c        ****     
+ 241:main.c        ****     // calling functions which are initializer
+ 242:main.c        ****     motor_pwm_init();
+ 243:main.c        ****     init_ADC();
+ 244:main.c        ****     prev = ADC_read(8);
+ 245:main.c        ****     //PORTB = 0x01;
+ 246:main.c        ****     
+ 247:main.c        ****     while (1)
+ 248:main.c        ****     {
+ 249:main.c        ****         encoder();
+ 250:main.c        ****         pick();
+ 251:main.c        ****         lift();
+ 252:main.c        ****         error = target - DISP;
+ 253:main.c        ****         //PORTJ = error;
+ 254:main.c        ****         if (error == 0)
+ 255:main.c        ****         {
+ 256:main.c        ****             PORTB = 0;
+ 257:main.c        ****             target = 0;
+ 258:main.c        ****             DISP = 0;
+ 259:main.c        ****         }
+ 260:main.c        ****         
+ 261:main.c        ****     }
+ 262:main.c        ****     return 0;
+ 263:main.c        **** }
+ 264:main.c        **** 
+ 265:main.c        **** void encoder()
+ 266:main.c        **** {
+ 267:main.c        ****     curr = ADC_read(8);
+ 268:main.c        ****     
+ 269:main.c        ****     DISP+= (curr- prev);
+ 270:main.c        ****     
+ 271:main.c        ****     if(curr - prev < -150)
+ 272:main.c        ****     {
+ 273:main.c        ****         DISP -= (curr - prev) ;
+ 274:main.c        ****         DISP ++;
+ 275:main.c        ****     }
+ 276:main.c        ****     
+ 277:main.c        ****     if(curr - prev > 150)
+ 278:main.c        ****     {
+ 279:main.c        ****         DISP -= (curr - prev);
+ 280:main.c        ****         DISP --;
+ 281:main.c        ****     }
+ 282:main.c        ****     
+ 283:main.c        ****     prev =  curr;
+ 284:main.c        **** }
+ 285:main.c        **** 
+ 286:main.c        **** void motor_pwm_init()
+ 287:main.c        **** {
+  16               		.loc 1 287 0
+  17               		.cfi_startproc
+  18               	/* prologue: function */
+  19               	/* frame size = 0 */
+  20               	/* stack size = 0 */
+  21               	.L__stack_usage = 0
+ 288:main.c        ****     TCCR3A |= (1<<COM3A1)|(1<<WGM30);
+  22               		.loc 1 288 0
+  23 0000 E0E9      		ldi r30,lo8(-112)
+  24 0002 F0E0      		ldi r31,0
+  25 0004 8081      		ld r24,Z
+  26 0006 8168      		ori r24,lo8(-127)
+  27 0008 8083      		st Z,r24
+ 289:main.c        ****     TCCR3B |= (1<<WGM32)|(1<<CS30)|(1<<CS32);
+  28               		.loc 1 289 0
+  29 000a E1E9      		ldi r30,lo8(-111)
+  30 000c F0E0      		ldi r31,0
+  31 000e 8081      		ld r24,Z
+  32 0010 8D60      		ori r24,lo8(13)
+  33 0012 8083      		st Z,r24
+  34 0014 0895      		ret
+  35               		.cfi_endproc
+  36               	.LFE13:
+  38               	.global	init_ADC
+  40               	init_ADC:
+  41               	.LFB14:
+ 290:main.c        **** }
+ 291:main.c        **** 
+ 292:main.c        **** void init_ADC()
+ 293:main.c        **** {
+  42               		.loc 1 293 0
+  43               		.cfi_startproc
+  44               	/* prologue: function */
+  45               	/* frame size = 0 */
+  46               	/* stack size = 0 */
+  47               	.L__stack_usage = 0
+ 294:main.c        ****     ADCSRA = 0x00;
+  48               		.loc 1 294 0
+  49 0016 EAE7      		ldi r30,lo8(122)
+  50 0018 F0E0      		ldi r31,0
+  51 001a 1082      		st Z,__zero_reg__
+ 295:main.c        ****     //ADCSRB = 0x00;        //MUX5KJDGHKDGHDJDLVK = 0
+ 296:main.c        ****     ADMUX = 0x20;    //Vref = 5V external --- ADLAR=1 --- MUX4:0 = 0000
+  52               		.loc 1 296 0
+  53 001c 80E2      		ldi r24,lo8(32)
+  54 001e 8093 7C00 		sts 124,r24
+ 297:main.c        ****     ACSR = 0x80;
+  55               		.loc 1 297 0
+  56 0022 80E8      		ldi r24,lo8(-128)
+  57 0024 80BF      		out 0x30,r24
+ 298:main.c        ****     ADCSRA = 0x86;        //ADEN=1 --- ADIE=1 --- ADPS2:0 = 1 1 0
+  58               		.loc 1 298 0
+  59 0026 86E8      		ldi r24,lo8(-122)
+  60 0028 8083      		st Z,r24
+  61 002a 0895      		ret
+  62               		.cfi_endproc
+  63               	.LFE14:
+  65               	.global	ADC_read
+  67               	ADC_read:
+  68               	.LFB15:
+ 299:main.c        **** }
+ 300:main.c        **** 
+ 301:main.c        **** unsigned char ADC_read(unsigned char Ch)
+ 302:main.c        **** {
+  69               		.loc 1 302 0
+  70               		.cfi_startproc
+  71               	.LVL0:
+  72               	/* prologue: function */
+  73               	/* frame size = 0 */
+  74               	/* stack size = 0 */
+  75               	.L__stack_usage = 0
+ 303:main.c        ****     unsigned char a;
+ 304:main.c        ****     //if(Ch>7)
+ 305:main.c        ****     //{
+ 306:main.c        ****     //    ADCSRB = 0x08;
+ 307:main.c        ****     //}
+ 308:main.c        ****     Ch = Ch & 0x07;
+  76               		.loc 1 308 0
+  77 002c 8770      		andi r24,lo8(7)
+  78               	.LVL1:
+ 309:main.c        ****     ADMUX= 0x20| Ch;
+  79               		.loc 1 309 0
+  80 002e 8062      		ori r24,lo8(32)
+  81               	.LVL2:
+  82 0030 8093 7C00 		sts 124,r24
+ 310:main.c        ****     ADCSRA = ADCSRA | 0x40;        //Set start conversion bit
+  83               		.loc 1 310 0
+  84 0034 8091 7A00 		lds r24,122
+  85 0038 8064      		ori r24,lo8(64)
+  86 003a 8093 7A00 		sts 122,r24
+  87               	.L5:
+ 311:main.c        ****     while((ADCSRA&0x10)==0);    //Wait for ADC conversion to complete
+  88               		.loc 1 311 0 discriminator 1
+  89 003e 8091 7A00 		lds r24,122
+  90 0042 84FF      		sbrs r24,4
+  91 0044 00C0      		rjmp .L5
+ 312:main.c        ****     a=ADCH;
+  92               		.loc 1 312 0
+  93 0046 8091 7900 		lds r24,121
+  94               	.LVL3:
+ 313:main.c        ****     ADCSRA = ADCSRA|0x10; //clear ADIF (ADC interrupt Flag) by writing 1 to it
+  95               		.loc 1 313 0
+  96 004a 9091 7A00 		lds r25,122
+  97 004e 9061      		ori r25,lo8(16)
+  98 0050 9093 7A00 		sts 122,r25
+ 314:main.c        ****     //ADCSRB = 0x00;
+ 315:main.c        ****     return a;
+ 316:main.c        **** }
+  99               		.loc 1 316 0
+ 100 0054 0895      		ret
+ 101               		.cfi_endproc
+ 102               	.LFE15:
+ 104               	.global	encoder
+ 106               	encoder:
+ 107               	.LFB12:
+ 266:main.c        **** {
+ 108               		.loc 1 266 0
+ 109               		.cfi_startproc
+ 110 0056 CF92      		push r12
+ 111               	.LCFI0:
+ 112               		.cfi_def_cfa_offset 4
+ 113               		.cfi_offset 12, -3
+ 114 0058 DF92      		push r13
+ 115               	.LCFI1:
+ 116               		.cfi_def_cfa_offset 5
+ 117               		.cfi_offset 13, -4
+ 118 005a EF92      		push r14
+ 119               	.LCFI2:
+ 120               		.cfi_def_cfa_offset 6
+ 121               		.cfi_offset 14, -5
+ 122 005c FF92      		push r15
+ 123               	.LCFI3:
+ 124               		.cfi_def_cfa_offset 7
+ 125               		.cfi_offset 15, -6
+ 126 005e 0F93      		push r16
+ 127               	.LCFI4:
+ 128               		.cfi_def_cfa_offset 8
+ 129               		.cfi_offset 16, -7
+ 130 0060 1F93      		push r17
+ 131               	.LCFI5:
+ 132               		.cfi_def_cfa_offset 9
+ 133               		.cfi_offset 17, -8
+ 134               	/* prologue: function */
+ 135               	/* frame size = 0 */
+ 136               	/* stack size = 6 */
+ 137               	.L__stack_usage = 6
+ 267:main.c        ****     curr = ADC_read(8);
+ 138               		.loc 1 267 0
+ 139 0062 88E0      		ldi r24,lo8(8)
+ 140 0064 0E94 0000 		call ADC_read
+ 141               	.LVL4:
+ 142 0068 90E0      		ldi r25,0
+ 143 006a A0E0      		ldi r26,0
+ 144 006c B0E0      		ldi r27,0
+ 145 006e 8093 0000 		sts curr,r24
+ 146 0072 9093 0000 		sts curr+1,r25
+ 147 0076 A093 0000 		sts curr+2,r26
+ 148 007a B093 0000 		sts curr+3,r27
+ 269:main.c        ****     DISP+= (curr- prev);
+ 149               		.loc 1 269 0
+ 150 007e 4091 0000 		lds r20,prev
+ 151 0082 5091 0000 		lds r21,prev+1
+ 152 0086 6091 0000 		lds r22,prev+2
+ 153 008a 7091 0000 		lds r23,prev+3
+ 154 008e 6C01      		movw r12,r24
+ 155 0090 7D01      		movw r14,r26
+ 156 0092 C41A      		sub r12,r20
+ 157 0094 D50A      		sbc r13,r21
+ 158 0096 E60A      		sbc r14,r22
+ 159 0098 F70A      		sbc r15,r23
+ 160 009a 0091 0000 		lds r16,DISP
+ 161 009e 1091 0000 		lds r17,DISP+1
+ 162 00a2 2091 0000 		lds r18,DISP+2
+ 163 00a6 3091 0000 		lds r19,DISP+3
+ 164 00aa 0C0D      		add r16,r12
+ 165 00ac 1D1D      		adc r17,r13
+ 166 00ae 2E1D      		adc r18,r14
+ 167 00b0 3F1D      		adc r19,r15
+ 271:main.c        ****     if(curr - prev < -150)
+ 168               		.loc 1 271 0
+ 169 00b2 EAE6      		ldi r30,106
+ 170 00b4 CE16      		cp r12,r30
+ 171 00b6 EFEF      		ldi r30,-1
+ 172 00b8 DE06      		cpc r13,r30
+ 173 00ba EE06      		cpc r14,r30
+ 174 00bc FE06      		cpc r15,r30
+ 175 00be 04F4      		brge .L8
+ 273:main.c        ****         DISP -= (curr - prev) ;
+ 176               		.loc 1 273 0
+ 177 00c0 481B      		sub r20,r24
+ 178 00c2 590B      		sbc r21,r25
+ 179 00c4 6A0B      		sbc r22,r26
+ 180 00c6 7B0B      		sbc r23,r27
+ 181 00c8 400F      		add r20,r16
+ 182 00ca 511F      		adc r21,r17
+ 183 00cc 621F      		adc r22,r18
+ 184 00ce 731F      		adc r23,r19
+ 274:main.c        ****         DISP ++;
+ 185               		.loc 1 274 0
+ 186 00d0 4F5F      		subi r20,-1
+ 187 00d2 5F4F      		sbci r21,-1
+ 188 00d4 6F4F      		sbci r22,-1
+ 189 00d6 7F4F      		sbci r23,-1
+ 190 00d8 00C0      		rjmp .L11
+ 191               	.L8:
+ 277:main.c        ****     if(curr - prev > 150)
+ 192               		.loc 1 277 0
+ 193 00da E7E9      		ldi r30,-105
+ 194 00dc CE16      		cp r12,r30
+ 195 00de D104      		cpc r13,__zero_reg__
+ 196 00e0 E104      		cpc r14,__zero_reg__
+ 197 00e2 F104      		cpc r15,__zero_reg__
+ 198 00e4 04F4      		brge .L10
+ 269:main.c        ****     DISP+= (curr- prev);
+ 199               		.loc 1 269 0
+ 200 00e6 0093 0000 		sts DISP,r16
+ 201 00ea 1093 0000 		sts DISP+1,r17
+ 202 00ee 2093 0000 		sts DISP+2,r18
+ 203 00f2 3093 0000 		sts DISP+3,r19
+ 204 00f6 00C0      		rjmp .L9
+ 205               	.L10:
+ 279:main.c        ****         DISP -= (curr - prev);
+ 206               		.loc 1 279 0
+ 207 00f8 481B      		sub r20,r24
+ 208 00fa 590B      		sbc r21,r25
+ 209 00fc 6A0B      		sbc r22,r26
+ 210 00fe 7B0B      		sbc r23,r27
+ 211 0100 400F      		add r20,r16
+ 212 0102 511F      		adc r21,r17
+ 213 0104 621F      		adc r22,r18
+ 214 0106 731F      		adc r23,r19
+ 280:main.c        ****         DISP --;
+ 215               		.loc 1 280 0
+ 216 0108 4150      		subi r20,1
+ 217 010a 5109      		sbc r21,__zero_reg__
+ 218 010c 6109      		sbc r22,__zero_reg__
+ 219 010e 7109      		sbc r23,__zero_reg__
+ 220               	.L11:
+ 221 0110 4093 0000 		sts DISP,r20
+ 222 0114 5093 0000 		sts DISP+1,r21
+ 223 0118 6093 0000 		sts DISP+2,r22
+ 224 011c 7093 0000 		sts DISP+3,r23
+ 225               	.L9:
+ 283:main.c        ****     prev =  curr;
+ 226               		.loc 1 283 0
+ 227 0120 8093 0000 		sts prev,r24
+ 228 0124 9093 0000 		sts prev+1,r25
+ 229 0128 A093 0000 		sts prev+2,r26
+ 230 012c B093 0000 		sts prev+3,r27
+ 231               	/* epilogue start */
+ 284:main.c        **** }
+ 232               		.loc 1 284 0
+ 233 0130 1F91      		pop r17
+ 234 0132 0F91      		pop r16
+ 235 0134 FF90      		pop r15
+ 236 0136 EF90      		pop r14
+ 237 0138 DF90      		pop r13
+ 238 013a CF90      		pop r12
+ 239 013c 0895      		ret
+ 240               		.cfi_endproc
+ 241               	.LFE12:
+ 243               	.global	pick
+ 245               	pick:
+ 246               	.LFB16:
+ 317:main.c        **** 
+ 318:main.c        **** void pick()
+ 319:main.c        **** {
+ 247               		.loc 1 319 0
+ 248               		.cfi_startproc
+ 249               	/* prologue: function */
+ 250               	/* frame size = 0 */
+ 251               	/* stack size = 0 */
+ 252               	.L__stack_usage = 0
+ 320:main.c        ****     if (PINA == 1)
+ 253               		.loc 1 320 0
+ 254 013e 80B1      		in r24,0
+ 255 0140 8130      		cpi r24,lo8(1)
+ 256 0142 01F0      		breq .L17
+ 321:main.c        ****     {
+ 322:main.c        ****         PORTC = 0x01;
+ 323:main.c        ****     }
+ 324:main.c        ****     else if (PINA == 2)
+ 257               		.loc 1 324 0
+ 258 0144 80B1      		in r24,0
+ 259 0146 8230      		cpi r24,lo8(2)
+ 260 0148 01F4      		brne .L15
+ 261               	.L17:
+ 325:main.c        ****     {
+ 326:main.c        ****         PORTC = 0x02;
+ 262               		.loc 1 326 0
+ 263 014a 88B9      		out 0x8,r24
+ 264 014c 0895      		ret
+ 265               	.L15:
+ 327:main.c        ****     }
+ 328:main.c        ****     else if (PINA == 32)
+ 266               		.loc 1 328 0
+ 267 014e 80B1      		in r24,0
+ 268 0150 8032      		cpi r24,lo8(32)
+ 269 0152 01F4      		brne .L16
+ 329:main.c        ****     {
+ 330:main.c        ****         PORTB |= (1<<PB0);
+ 270               		.loc 1 330 0
+ 271 0154 289A      		sbi 0x5,0
+ 272 0156 0895      		ret
+ 273               	.L16:
+ 331:main.c        ****     }
+ 332:main.c        ****     else if (PINA == 64)
+ 274               		.loc 1 332 0
+ 275 0158 80B1      		in r24,0
+ 276 015a 8034      		cpi r24,lo8(64)
+ 277 015c 01F4      		brne .L12
+ 333:main.c        ****     {
+ 334:main.c        ****         PORTB &= ~(1<<PB0);
+ 278               		.loc 1 334 0
+ 279 015e 2898      		cbi 0x5,0
+ 280               	.L12:
+ 281 0160 0895      		ret
+ 282               		.cfi_endproc
+ 283               	.LFE16:
+ 285               	.global	lift
+ 287               	lift:
+ 288               	.LFB17:
+ 335:main.c        ****     }
+ 336:main.c        ****     
+ 337:main.c        **** }
+ 338:main.c        **** 
+ 339:main.c        **** void lift()
+ 340:main.c        **** {
+ 289               		.loc 1 340 0
+ 290               		.cfi_startproc
+ 291               	/* prologue: function */
+ 292               	/* frame size = 0 */
+ 293               	/* stack size = 0 */
+ 294               	.L__stack_usage = 0
+ 341:main.c        ****     if (PINA == 4)
+ 295               		.loc 1 341 0
+ 296 0162 80B1      		in r24,0
+ 297 0164 8430      		cpi r24,lo8(4)
+ 298 0166 01F4      		brne .L19
+ 342:main.c        ****     {
+ 343:main.c        ****         PORTB = 0x01;
+ 299               		.loc 1 343 0
+ 300 0168 81E0      		ldi r24,lo8(1)
+ 301 016a 85B9      		out 0x5,r24
+ 344:main.c        ****         OCR3A = 200;
+ 302               		.loc 1 344 0
+ 303 016c 88EC      		ldi r24,lo8(-56)
+ 304 016e 90E0      		ldi r25,0
+ 305 0170 9093 9900 		sts 152+1,r25
+ 306 0174 8093 9800 		sts 152,r24
+ 345:main.c        ****         target = -400;
+ 307               		.loc 1 345 0
+ 308 0178 80E7      		ldi r24,lo8(112)
+ 309 017a 9EEF      		ldi r25,lo8(-2)
+ 310 017c AFEF      		ldi r26,lo8(-1)
+ 311 017e BFEF      		ldi r27,lo8(-1)
+ 312 0180 00C0      		rjmp .L22
+ 313               	.L19:
+ 346:main.c        ****     }
+ 347:main.c        ****     else if(PINA == 8)
+ 314               		.loc 1 347 0
+ 315 0182 80B1      		in r24,0
+ 316 0184 8830      		cpi r24,lo8(8)
+ 317 0186 01F4      		brne .L21
+ 348:main.c        ****     {
+ 349:main.c        ****         PORTB = 0x02;
+ 318               		.loc 1 349 0
+ 319 0188 82E0      		ldi r24,lo8(2)
+ 320 018a 85B9      		out 0x5,r24
+ 350:main.c        ****         OCR3A = 30;
+ 321               		.loc 1 350 0
+ 322 018c 8EE1      		ldi r24,lo8(30)
+ 323 018e 90E0      		ldi r25,0
+ 324 0190 9093 9900 		sts 152+1,r25
+ 325 0194 8093 9800 		sts 152,r24
+ 351:main.c        ****         target = 400;
+ 326               		.loc 1 351 0
+ 327 0198 80E9      		ldi r24,lo8(-112)
+ 328 019a 91E0      		ldi r25,lo8(1)
+ 329 019c A0E0      		ldi r26,0
+ 330 019e B0E0      		ldi r27,0
+ 331               	.L22:
+ 332 01a0 8093 0000 		sts target,r24
+ 333 01a4 9093 0000 		sts target+1,r25
+ 334 01a8 A093 0000 		sts target+2,r26
+ 335 01ac B093 0000 		sts target+3,r27
+ 336 01b0 0895      		ret
+ 337               	.L21:
+ 352:main.c        ****     }
+ 353:main.c        ****     else if(PINA == 16)
+ 338               		.loc 1 353 0
+ 339 01b2 80B1      		in r24,0
+ 340 01b4 8031      		cpi r24,lo8(16)
+ 341 01b6 01F4      		brne .L18
+ 354:main.c        ****     {
+ 355:main.c        ****         PORTB = 0x00;
+ 342               		.loc 1 355 0
+ 343 01b8 15B8      		out 0x5,__zero_reg__
+ 344               	.L18:
+ 345 01ba 0895      		ret
+ 346               		.cfi_endproc
+ 347               	.LFE17:
+ 349               		.section	.text.startup,"ax",@progbits
+ 350               	.global	main
+ 352               	main:
+ 353               	.LFB11:
+ 225:main.c        **** {
+ 354               		.loc 1 225 0
+ 355               		.cfi_startproc
+ 356               	/* prologue: function */
+ 357               	/* frame size = 0 */
+ 358               	/* stack size = 0 */
+ 359               	.L__stack_usage = 0
+ 229:main.c        ****     DDRA = 0x00;
+ 360               		.loc 1 229 0
+ 361 0000 11B8      		out 0x1,__zero_reg__
+ 230:main.c        ****     DDRK = 0x00;
+ 362               		.loc 1 230 0
+ 363 0002 1092 0701 		sts 263,__zero_reg__
+ 234:main.c        ****     DDRE = 0xFF;
+ 364               		.loc 1 234 0
+ 365 0006 8FEF      		ldi r24,lo8(-1)
+ 366 0008 8DB9      		out 0xd,r24
+ 235:main.c        ****     PORTE = 0xFF;
+ 367               		.loc 1 235 0
+ 368 000a 8EB9      		out 0xe,r24
+ 236:main.c        ****     DDRB = 0xFF;
+ 369               		.loc 1 236 0
+ 370 000c 84B9      		out 0x4,r24
+ 238:main.c        ****     DDRC = 0xFF;
+ 371               		.loc 1 238 0
+ 372 000e 87B9      		out 0x7,r24
+ 239:main.c        ****     DDRD = 0xFF;
+ 373               		.loc 1 239 0
+ 374 0010 8AB9      		out 0xa,r24
+ 242:main.c        ****     motor_pwm_init();
+ 375               		.loc 1 242 0
+ 376 0012 0E94 0000 		call motor_pwm_init
+ 377               	.LVL5:
+ 243:main.c        ****     init_ADC();
+ 378               		.loc 1 243 0
+ 379 0016 0E94 0000 		call init_ADC
+ 380               	.LVL6:
+ 244:main.c        ****     prev = ADC_read(8);
+ 381               		.loc 1 244 0
+ 382 001a 88E0      		ldi r24,lo8(8)
+ 383 001c 0E94 0000 		call ADC_read
+ 384               	.LVL7:
+ 385 0020 90E0      		ldi r25,0
+ 386 0022 A0E0      		ldi r26,0
+ 387 0024 B0E0      		ldi r27,0
+ 388 0026 8093 0000 		sts prev,r24
+ 389 002a 9093 0000 		sts prev+1,r25
+ 390 002e A093 0000 		sts prev+2,r26
+ 391 0032 B093 0000 		sts prev+3,r27
+ 392               	.L25:
+ 249:main.c        ****         encoder();
+ 393               		.loc 1 249 0
+ 394 0036 0E94 0000 		call encoder
+ 395               	.LVL8:
+ 250:main.c        ****         pick();
+ 396               		.loc 1 250 0
+ 397 003a 0E94 0000 		call pick
+ 398               	.LVL9:
+ 251:main.c        ****         lift();
+ 399               		.loc 1 251 0
+ 400 003e 0E94 0000 		call lift
+ 401               	.LVL10:
+ 252:main.c        ****         error = target - DISP;
+ 402               		.loc 1 252 0
+ 403 0042 8091 0000 		lds r24,target
+ 404 0046 9091 0000 		lds r25,target+1
+ 405 004a A091 0000 		lds r26,target+2
+ 406 004e B091 0000 		lds r27,target+3
+ 407 0052 4091 0000 		lds r20,DISP
+ 408 0056 5091 0000 		lds r21,DISP+1
+ 409 005a 6091 0000 		lds r22,DISP+2
+ 410 005e 7091 0000 		lds r23,DISP+3
+ 411 0062 841B      		sub r24,r20
+ 412 0064 950B      		sbc r25,r21
+ 413 0066 A60B      		sbc r26,r22
+ 414 0068 B70B      		sbc r27,r23
+ 415 006a 8093 0000 		sts error,r24
+ 416 006e 9093 0000 		sts error+1,r25
+ 417 0072 A093 0000 		sts error+2,r26
+ 418 0076 B093 0000 		sts error+3,r27
+ 254:main.c        ****         if (error == 0)
+ 419               		.loc 1 254 0
+ 420 007a 892B      		or r24,r25
+ 421 007c 8A2B      		or r24,r26
+ 422 007e 8B2B      		or r24,r27
+ 423 0080 01F4      		brne .L25
+ 256:main.c        ****             PORTB = 0;
+ 424               		.loc 1 256 0
+ 425 0082 15B8      		out 0x5,__zero_reg__
+ 257:main.c        ****             target = 0;
+ 426               		.loc 1 257 0
+ 427 0084 1092 0000 		sts target,__zero_reg__
+ 428 0088 1092 0000 		sts target+1,__zero_reg__
+ 429 008c 1092 0000 		sts target+2,__zero_reg__
+ 430 0090 1092 0000 		sts target+3,__zero_reg__
+ 258:main.c        ****             DISP = 0;
+ 431               		.loc 1 258 0
+ 432 0094 1092 0000 		sts DISP,__zero_reg__
+ 433 0098 1092 0000 		sts DISP+1,__zero_reg__
+ 434 009c 1092 0000 		sts DISP+2,__zero_reg__
+ 435 00a0 1092 0000 		sts DISP+3,__zero_reg__
+ 436 00a4 00C0      		rjmp .L25
+ 437               		.cfi_endproc
+ 438               	.LFE11:
+ 440               		.comm	error,4,1
+ 441               	.global	target
+ 442               		.section .bss
+ 445               	target:
+ 446 0000 0000 0000 		.zero	4
+ 447               	.global	curr
+ 450               	curr:
+ 451 0004 0000 0000 		.zero	4
+ 452               	.global	prev
+ 455               	prev:
+ 456 0008 0000 0000 		.zero	4
+ 457               	.global	DISP
+ 460               	DISP:
+ 461 000c 0000 0000 		.zero	4
+ 462               		.text
+ 463               	.Letext0:
+ 464               		.file 2 "/usr/local/CrossPack-AVR-20131216/avr/include/stdint.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 main.c
+/var/folders/h4/v2sx1nv55fbfb9hmgflpp9yc0000gn/T//ccmQBYCe.s:2      *ABS*:0000003e __SP_H__
+/var/folders/h4/v2sx1nv55fbfb9hmgflpp9yc0000gn/T//ccmQBYCe.s:3      *ABS*:0000003d __SP_L__
+/var/folders/h4/v2sx1nv55fbfb9hmgflpp9yc0000gn/T//ccmQBYCe.s:4      *ABS*:0000003f __SREG__
+/var/folders/h4/v2sx1nv55fbfb9hmgflpp9yc0000gn/T//ccmQBYCe.s:5      *ABS*:0000003b __RAMPZ__
+/var/folders/h4/v2sx1nv55fbfb9hmgflpp9yc0000gn/T//ccmQBYCe.s:6      *ABS*:00000000 __tmp_reg__
+/var/folders/h4/v2sx1nv55fbfb9hmgflpp9yc0000gn/T//ccmQBYCe.s:7      *ABS*:00000001 __zero_reg__
+/var/folders/h4/v2sx1nv55fbfb9hmgflpp9yc0000gn/T//ccmQBYCe.s:13     .text:00000000 motor_pwm_init
+/var/folders/h4/v2sx1nv55fbfb9hmgflpp9yc0000gn/T//ccmQBYCe.s:40     .text:00000016 init_ADC
+/var/folders/h4/v2sx1nv55fbfb9hmgflpp9yc0000gn/T//ccmQBYCe.s:67     .text:0000002c ADC_read
+/var/folders/h4/v2sx1nv55fbfb9hmgflpp9yc0000gn/T//ccmQBYCe.s:106    .text:00000056 encoder
+/var/folders/h4/v2sx1nv55fbfb9hmgflpp9yc0000gn/T//ccmQBYCe.s:450    .bss:00000004 curr
+/var/folders/h4/v2sx1nv55fbfb9hmgflpp9yc0000gn/T//ccmQBYCe.s:455    .bss:00000008 prev
+/var/folders/h4/v2sx1nv55fbfb9hmgflpp9yc0000gn/T//ccmQBYCe.s:460    .bss:0000000c DISP
+/var/folders/h4/v2sx1nv55fbfb9hmgflpp9yc0000gn/T//ccmQBYCe.s:245    .text:0000013e pick
+/var/folders/h4/v2sx1nv55fbfb9hmgflpp9yc0000gn/T//ccmQBYCe.s:287    .text:00000162 lift
+/var/folders/h4/v2sx1nv55fbfb9hmgflpp9yc0000gn/T//ccmQBYCe.s:445    .bss:00000000 target
+/var/folders/h4/v2sx1nv55fbfb9hmgflpp9yc0000gn/T//ccmQBYCe.s:352    .text.startup:00000000 main
+                            *COM*:00000004 error
+
+UNDEFINED SYMBOLS
+__do_clear_bss
